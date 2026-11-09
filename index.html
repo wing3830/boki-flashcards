@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>簿記3級 仕訳フラッシュカード</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#172033;--muted:#687386;--blue:#3659d9;--blue2:#e9edff;--green:#168653;--red:#c43e4d;--line:#e2e7f0;--shadow:0 10px 28px rgba(30,45,80,.09)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+main{max-width:560px;margin:0 auto;padding:18px 16px 34px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 18px}
+h1{font-size:20px;line-height:1.3;margin:0}
+.sub{font-size:12px;color:var(--muted);margin-top:5px}
+.pill{background:var(--blue2);color:var(--blue);font-size:12px;font-weight:800;padding:7px 10px;border-radius:999px;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.stat strong{display:block;font-size:21px}
+.stat span{font-size:11px;color:var(--muted)}
+.progress{height:6px;background:#e2e7f0;border-radius:9px;overflow:hidden;margin:0 0 16px}
+.progress>div{height:100%;width:0;background:var(--blue);transition:width .2s}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px 18px;box-shadow:var(--shadow)}
+.eyebrow{text-align:center;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.04em;display:none}
+.question{font-size:25px;line-height:1.5;font-weight:850;text-align:center;margin:20px 0 8px;overflow-wrap:anywhere}
+.hint{text-align:center;font-size:13px;color:var(--muted);min-height:20px;margin-bottom:20px}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,select{font:inherit}
+.answer{border:2px solid var(--line);background:white;border-radius:16px;padding:16px 8px;min-height:82px;font-weight:800;cursor:pointer;color:var(--ink);transition:.12s}
+.answer .big{display:block;font-size:24px;margin-bottom:3px}
+.answer .small{font-size:12px;color:var(--muted)}
+.answer:active{transform:scale(.98)}
+.answer:focus-visible,.btn:focus-visible,select:focus-visible{outline:3px solid #9eafff;outline-offset:2px}
+.answer.correct{border-color:var(--green);background:#e9f8f0;color:var(--green)}
+.answer.wrong{border-color:var(--red);background:#fff0f1;color:var(--red)}
+.feedback{display:none;margin-top:15px;padding:13px;border-radius:14px;font-size:14px;line-height:1.6}
+.feedback.show{display:block}
+.feedback.good{background:#e9f8f0;color:#12683f}
+.feedback.bad{background:#fff0f1;color:#9d2635}
+.explain{display:block;margin-top:5px;font-weight:500}
+.actions{display:flex;gap:9px;margin-top:15px}
+.weak-toggle{display:block;width:100%;margin-top:10px;border:1px solid #e2b84b;background:#fff8df;color:#795b00;border-radius:12px;padding:10px;font-weight:800;cursor:pointer}
+.weak-toggle.marked{background:#fff0c2;border-color:#d49b00}
+.btn{border:0;border-radius:14px;padding:13px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--blue);color:white;flex:1}
+.secondary{background:#e9edf5;color:#344054}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.settings{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;margin-top:15px}
+.settings label{display:block;font-size:13px;font-weight:750;margin-bottom:8px}
+select{width:100%;border:1px solid var(--line);background:white;border-radius:12px;padding:11px;color:var(--ink)}
+.note{font-size:12px;color:var(--muted);line-height:1.7;margin:14px 2px 0}
+kbd{font-family:inherit;background:#eef1f7;border-radius:5px;padding:2px 5px}
+@media(max-width:360px){.question{font-size:22px}.card{padding:18px 13px}.answer{min-height:76px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div><h1>簿記3級 仕訳フラッシュカード</h1><div class="sub">見た瞬間に「左・右」を判断する練習</div></div>
+  <div class="pill">スマホ対応</div>
+</header>
+<section class="stats" aria-label="学習成績">
+  <div class="stat"><strong id="total">0</strong><span>回答数</span></div>
+  <div class="stat"><strong id="correct">0</strong><span>正解数</span></div>
+  <div class="stat"><strong id="rate">—</strong><span>正解率</span></div>
+</section>
+<div class="progress" aria-label="正解率"><div id="progressBar"></div></div>
+
+<section class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:var(--muted)">
+    <button class="weak-toggle" id="weakToggle" type="button" aria-pressed="false" style="display:inline-block;width:auto;margin-top:0;padding:8px 10px;flex-shrink:0">☆ 苦手チェック</button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <label for="showCategory" style="margin:0;font-weight:600;cursor:pointer">勘定科目を表示</label>
+      <input id="showCategory" type="checkbox" style="width:16px;height:16px;margin:0;cursor:pointer" aria-label="勘定科目の表示を切り替え">
+    </div>
+  </div>
+  <div class="eyebrow" id="category">資産</div>
+  <div class="question" id="question">売掛金が増えたら？</div>
+  <div class="hint" id="hint">左右どちらに記入する？</div>
+  <div class="answers">
+    <button class="answer" data-side="left"><span class="big">左</span><span class="small">借方</span></button>
+    <button class="answer" data-side="right"><span class="big">右</span><span class="small">貸方</span></button>
+  </div>
+  <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+  <div class="actions">
+    <button class="btn secondary" id="skip">パス</button>
+    <button class="btn primary" id="next" disabled>次のカード →</button>
+  </div>
+</section>
+
+<section class="settings">
+  <label for="mode">出題範囲</label>
+  <select id="mode">
+    <option value="all">全部（おすすめ）</option>
+    <option value="weak">苦手チェックした問題だけ（増えた・減った）</option>
+    <option value="asset">資産だけ</option>
+    <option value="liability">負債だけ</option>
+    <option value="equity">純資産だけ</option>
+    <option value="revenue">収益だけ</option>
+    <option value="expense">費用だけ</option>
+  </select>
+  <div style="margin-top:10px"><button class="btn secondary" id="reset" style="width:100%">成績をリセット</button></div>
+</section>
+<p class="note">基本ルール：<b>資産・費用は増えたら左</b>、<b>負債・純資産・収益は増えたら右</b>。減ったときは反対側！ まずはカードで反射的に答えられるようにしよう。</p>
+</main>
+<script>
+const accounts = [
+  // 資産：増加は左、減少は右
+  {name:"現金",type:"asset",label:"資産",rule:"資産",why:"現金は資産。資産は増えたら左、減ったら右。"},
+  {name:"小口現金",type:"asset",label:"資産",rule:"資産",why:"小口現金も現金の一種で資産。増えたら左、減ったら右。"},
+  {name:"普通預金",type:"asset",label:"資産",rule:"資産",why:"預金は資産。資産は増えたら左、減ったら右。"},
+  {name:"当座預金",type:"asset",label:"資産",rule:"資産",why:"当座預金は資産。増えたら左、減ったら右。"},
+  {name:"定期預金",type:"asset",label:"資産",rule:"資産",why:"定期預金は資産。増えたら左、減ったら右。"},
+  {name:"売掛金",type:"asset",label:"資産",rule:"資産",why:"売掛金は、あとで代金を受け取る権利＝資産。"},
+  {name:"受取手形",type:"asset",label:"資産",rule:"資産",why:"受取手形は代金を受け取る権利なので資産。"},
+  {name:"電子記録債権",type:"asset",label:"資産",rule:"資産",why:"電子記録債権は代金を受け取る権利＝資産。"},
+  {name:"未収入金",type:"asset",label:"資産",rule:"資産",why:"商品売買以外で、あとで代金を受け取る権利は資産。"},
+  {name:"未収収益",type:"asset",label:"資産",rule:"資産",why:"すでに発生しているが、まだ受け取っていない収益に関する資産。"},
+  {name:"貸付金",type:"asset",label:"資産",rule:"資産",why:"貸付金は、あとで返してもらう権利＝資産。"},
+  {name:"立替金",type:"asset",label:"資産",rule:"資産",why:"立替金は、立て替えたお金をあとで返してもらう権利＝資産。"},
+  {name:"仮払金",type:"asset",label:"資産",rule:"資産",why:"仮払金は、用途や金額が確定していない仮の支払いで資産扱い。"},
+  {name:"前払金",type:"asset",label:"資産",rule:"資産",why:"商品などを受け取る前に支払った前払金は資産。"},
+  {name:"前払費用",type:"asset",label:"資産",rule:"資産",why:"先に払って、あとでサービスを受ける権利なので資産。"},
+  {name:"商品",type:"asset",label:"資産",rule:"資産",why:"商品は資産として扱う。増えたら左、減ったら右。"},
+  {name:"繰越商品",type:"asset",label:"資産",rule:"資産",why:"決算時に翌期へ繰り越す商品は資産。"},
+  {name:"貯蔵品",type:"asset",label:"資産",rule:"資産",why:"未使用の切手や消耗品などの貯蔵品は資産。"},
+  {name:"備品",type:"asset",label:"資産",rule:"資産",why:"備品は資産。購入時は備品が左に増える。"},
+  {name:"建物",type:"asset",label:"資産",rule:"資産",why:"建物は固定資産。増えたら左、減ったら右。"},
+  {name:"土地",type:"asset",label:"資産",rule:"資産",why:"土地は固定資産。増えたら左、減ったら右。"},
+  {name:"車両運搬具",type:"asset",label:"資産",rule:"資産",why:"車両運搬具は固定資産。増えたら左、減ったら右。"},
+  {name:"仮払消費税",type:"asset",label:"資産",rule:"資産",why:"税抜方式では、支払った消費税を仮払消費税として資産側に記録する。"},
+  // 負債：増加は右、減少は左
+  {name:"買掛金",type:"liability",label:"負債",rule:"負債",why:"買掛金は、あとで代金を払う義務＝負債。"},
+  {name:"支払手形",type:"liability",label:"負債",rule:"負債",why:"支払手形は代金を支払う義務＝負債。"},
+  {name:"電子記録債務",type:"liability",label:"負債",rule:"負債",why:"電子記録債務は代金を支払う義務＝負債。"},
+  {name:"借入金",type:"liability",label:"負債",rule:"負債",why:"借入金は返済する義務＝負債。"},
+  {name:"未払金",type:"liability",label:"負債",rule:"負債",why:"未払金は、あとで支払う義務＝負債。"},
+  {name:"未払費用",type:"liability",label:"負債",rule:"負債",why:"すでに発生しているが、まだ支払っていない費用に関する負債。"},
+  {name:"未払法人税等",type:"liability",label:"負債",rule:"負債",why:"まだ支払っていない法人税等は負債。"},
+  {name:"預り金",type:"liability",label:"負債",rule:"負債",why:"他人のお金を一時的に預かり、あとで返す・納付する義務＝負債。"},
+  {name:"仮受金",type:"liability",label:"負債",rule:"負債",why:"内容や金額が不明な入金を一時的に受け入れた仮の負債。"},
+  {name:"前受金",type:"liability",label:"負債",rule:"負債",why:"先に受け取ったが、まだ商品・サービスを渡す義務があるため負債。"},
+  {name:"前受収益",type:"liability",label:"負債",rule:"負債",why:"先に受け取った収益のうち、まだ提供していない期間分は負債。"},
+  {name:"仮受消費税",type:"liability",label:"負債",rule:"負債",why:"税抜方式では、受け取った消費税を仮受消費税として負債側に記録する。"},
+  // 純資産：増加は右、減少は左
+  {name:"資本金",type:"equity",label:"純資産",rule:"純資産",why:"資本金は純資産。増えたら右、減ったら左。"},
+  {name:"繰越利益剰余金",type:"equity",label:"純資産",rule:"純資産",why:"繰越利益剰余金は純資産。増えたら右、減ったら左。"},
+  {name:"利益準備金",type:"equity",label:"純資産",rule:"純資産",why:"利益準備金は利益剰余金のうち会社法に基づいて積み立てる純資産。増えたら右、減ったら左。"},
+  // 収益：増加は右、減少は左
+  {name:"売上",type:"revenue",label:"収益",rule:"収益",why:"売上は収益。増えたら右、減ったら左。"},
+  {name:"受取手数料",type:"revenue",label:"収益",rule:"収益",why:"受取手数料は収益。増えたら右、減ったら左。"},
+  {name:"受取利息",type:"revenue",label:"収益",rule:"収益",why:"受取利息は収益。増えたら右、減ったら左。"},
+  {name:"受取配当金",type:"revenue",label:"収益",rule:"収益",why:"受取配当金は収益。増えたら右、減ったら左。"},
+  {name:"雑収入",type:"revenue",label:"収益",rule:"収益",why:"雑収入は収益。増えたら右、減ったら左。"},
+  {name:"固定資産売却益",type:"revenue",label:"収益",rule:"収益",why:"固定資産売却益は収益。増えたら右、減ったら左。"},
+  {name:"有価証券売却益",type:"revenue",label:"収益",rule:"収益",why:"有価証券売却益は収益。増えたら右、減ったら左。"},
+  // 費用：増加は左、減少は右
+  {name:"仕入",type:"expense",label:"費用",rule:"費用",why:"簿記3級の三分法では、商品を仕入れたときの「仕入」は費用として左に増える。"},
+  {name:"給料",type:"expense",label:"費用",rule:"費用",why:"給料は費用。増えたら左、減ったら右。"},
+  {name:"法定福利費",type:"expense",label:"費用",rule:"費用",why:"会社が負担する社会保険料などの法定福利費は費用。増えたら左、減ったら右。"},
+  {name:"売上原価",type:"expense",label:"費用",rule:"費用",why:"販売した商品の仕入原価。費用なので増えたら左、減ったら右。三分法の決算整理では仕入勘定を使って売上原価を算定する。"},
+  {name:"支払家賃",type:"expense",label:"費用",rule:"費用",why:"支払家賃は費用。増えたら左、減ったら右。"},
+  {name:"支払手数料",type:"expense",label:"費用",rule:"費用",why:"支払手数料は費用。増えたら左、減ったら右。"},
+  {name:"水道光熱費",type:"expense",label:"費用",rule:"費用",why:"水道光熱費は費用。増えたら左、減ったら右。"},
+  {name:"通信費",type:"expense",label:"費用",rule:"費用",why:"通信費は費用。増えたら左、減ったら右。"},
+  {name:"旅費交通費",type:"expense",label:"費用",rule:"費用",why:"旅費交通費は費用。増えたら左、減ったら右。"},
+  {name:"消耗品費",type:"expense",label:"費用",rule:"費用",why:"消耗品費は費用。増えたら左、減ったら右。"},
+  {name:"広告宣伝費",type:"expense",label:"費用",rule:"費用",why:"広告宣伝費は費用。増えたら左、減ったら右。"},
+  {name:"保険料",type:"expense",label:"費用",rule:"費用",why:"当期の保険料は費用。増えたら左、減ったら右。"},
+  {name:"租税公課",type:"expense",label:"費用",rule:"費用",why:"租税公課は費用。増えたら左、減ったら右。"},
+  {name:"支払利息",type:"expense",label:"費用",rule:"費用",why:"支払利息は費用。増えたら左、減ったら右。"},
+  {name:"貸倒損失",type:"expense",label:"費用",rule:"費用",why:"貸倒損失は費用。増えたら左、減ったら右。"},
+  {name:"減価償却費",type:"expense",label:"費用",rule:"費用",why:"減価償却費は費用。計上すると左に増える。"},
+  {name:"固定資産売却損",type:"expense",label:"費用",rule:"費用",why:"固定資産売却損は費用。増えたら左、減ったら右。"},
+  {name:"有価証券売却損",type:"expense",label:"費用",rule:"費用",why:"有価証券売却損は費用。増えたら左、減ったら右。"},
+  {name:"雑損",type:"expense",label:"費用",rule:"費用",why:"雑損は費用。増えたら左、減ったら右。"},
+  // 追加：2026年度の日商簿記3級で押さえたい科目
+  {name:"クレジット売掛金",type:"asset",label:"資産",rule:"資産",why:"クレジットカード会社から後日代金を受け取る権利。資産なので増えたら左、減ったら右。"},
+  {name:"差入保証金",type:"asset",label:"資産",rule:"資産",why:"契約終了時などに返還される保証金は資産。増えたら左、減ったら右。"},
+  {name:"受取商品券",type:"asset",label:"資産",rule:"資産",why:"受け取った商品券は、あとで商品などと交換できる権利として資産扱い。"},
+  {name:"売買目的有価証券",type:"asset",label:"資産",rule:"資産",why:"売買目的で保有する有価証券は資産。増えたら左、減ったら右。"},
+  {name:"仮払法人税等",type:"asset",label:"資産",rule:"資産",why:"法人税等を中間納付したときなどに使う仮払いの資産科目。"},
+  {name:"未収手数料",type:"asset",label:"資産",rule:"資産",why:"受け取る権利が発生しているが、まだ受け取っていない手数料は資産。"},
+  {name:"前払保険料",type:"asset",label:"資産",rule:"資産",why:"翌期以降の保険料を先に支払った部分は前払費用として資産。"},
+  {name:"貸倒引当金",type:"asset",label:"資産（控除）",rule:"資産の控除項目",increaseLeft:false,why:"売掛金などから差し引いて表示する評価勘定。通常の資産と逆で、増えたら右、減ったら左。"},
+  {name:"備品減価償却累計額",type:"asset",label:"資産（控除）",rule:"資産の控除項目",increaseLeft:false,why:"備品の取得原価から差し引く累計額。増えたら右、減ったら左。"},
+  {name:"当座借越",type:"liability",label:"負債",rule:"負債",why:"当座預金の残高を超えて支払い、銀行から借りている状態。負債なので増えたら右、減ったら左。"},
+  {name:"未払利息",type:"liability",label:"負債",rule:"負債",why:"発生しているが、まだ支払っていない利息は未払費用として負債。"},
+  {name:"貸倒引当金繰入",type:"expense",label:"費用",rule:"費用",why:"貸倒引当金を追加設定するときの費用。増えたら左、減ったら右。"},
+  {name:"貸倒引当金戻入",type:"revenue",label:"収益",rule:"収益",why:"貸倒引当金の必要額が減り、引当金を戻し入れるときの収益。増えたら右、減ったら左。"},
+  {name:"法人税、住民税及び事業税",type:"expense",label:"費用",rule:"費用",why:"法人税等を費用計上するときに使う。増えたら左、減ったら右。"},
+  {name:"雑益",type:"revenue",label:"収益",rule:"収益",why:"本業以外で生じた少額の利益など。収益なので増えたら右、減ったら左。"},
+  {name:"受取家賃",type:"revenue",label:"収益",rule:"収益",why:"建物などを貸して受け取る家賃は収益。増えたら右、減ったら左。"},
+  {name:"受取地代",type:"revenue",label:"収益",rule:"収益",why:"土地を貸して受け取る地代は収益。増えたら右、減ったら左。"},
+  {name:"発送費",type:"expense",label:"費用",rule:"費用",why:"商品発送にかかった費用として処理する場合は費用。問題文の条件に従う。"},
+  {name:"固定資産除却損",type:"expense",label:"費用",rule:"費用",why:"固定資産を除却した際に生じる損失。費用・損失なので増えたら左、減ったら右。"},
+  {name:"売上値引",type:"revenue",label:"収益の減少項目",rule:"収益の減少項目",increaseLeft:true,why:"売上の値引きは売上を減らす項目なので、発生・増加は左、減少は右。"},
+  {name:"現金過不足",type:"special",label:"仮勘定",rule:"状況で左右が変わる",specialChanges:["不足が判明","過剰が判明"],why:"現金過不足は現金の実際有高と帳簿残高のズレを一時的に処理する勘定。不足なら借方（左）、過剰なら貸方（右）に記入する。"}
+];
+const typeNames = {asset:"資産",liability:"負債",equity:"純資産",revenue:"収益",expense:"費用"};
+let current=null, answered=false, total=0, correct=0, seen=new Set();
+const weakStorageKey="bokiFlashcardsWeakQuestions";
+let weakQuestions=new Set();
+try { weakQuestions=new Set(JSON.parse(localStorage.getItem(weakStorageKey)||"[]")); } catch(e) { weakQuestions=new Set(); }
+function questionKey(card){return card.name+"|"+card.change;}
+function saveWeakQuestions(){try{localStorage.setItem(weakStorageKey,JSON.stringify([...weakQuestions]));}catch(e){}}
+function updateWeakButton(){
+  const marked=!!current&&weakQuestions.has(questionKey(current));
+  $("weakToggle").textContent=marked?"★ 苦手チェック済み":"☆ 苦手チェック";
+  $("weakToggle").classList.toggle("marked",marked);
+  $("weakToggle").setAttribute("aria-pressed",String(marked));
+}
+const $=id=>document.getElementById(id);
+function pickCard(){
+  const mode=$("mode").value;
+  let pool=accounts.filter(a=>mode==="all"||a.type===mode||mode==="weak");
+  let choices=[];
+  pool.forEach(a=>(a.specialChanges||["増えた","減った"]).forEach(change=>choices.push({...a,change})));
+  if(mode==="weak") choices=choices.filter(c=>
+    weakQuestions.has(questionKey(c)) ||
+    weakQuestions.has(c.name+"|"+((c.specialChanges||["増えた","減った"]).find(change=>change!==c.change)))
+  );
+  if(choices.length===0){
+    current=null; answered=false;
+    $("category").textContent="";
+    $("question").textContent="苦手チェックした問題がありません";
+    $("hint").textContent="通常モードで問題を苦手チェックしてください。";
+    $("feedback").className="feedback"; $("feedback").innerHTML="";
+    document.querySelectorAll(".answer").forEach(b=>{b.disabled=true;b.classList.remove("correct","wrong");});
+    $("next").disabled=true; updateWeakButton(); return;
+  }
+  if(choices.length>1 && current){choices=choices.filter(c=>!(c.name===current.name&&c.change===current.change));}
+  current=choices[Math.floor(Math.random()*choices.length)];
+  answered=false;
+  $("category").textContent=current.label+" · "+current.name;
+  $("question").textContent=current.specialChanges ? current.name+"で「"+current.change+"」したら？" : current.name+"が"+current.change+"ら？";
+  $("hint").textContent="この勘定科目は左右どっち？";
+  $("feedback").className="feedback";
+  $("feedback").innerHTML="";
+  document.querySelectorAll(".answer").forEach(b=>{b.disabled=false;b.classList.remove("correct","wrong");});
+  $("next").disabled=true;
+  updateWeakButton();
+}
+function correctSide(c){
+  // 現金過不足は増減ではなく、不足・過剰の判明状況で左右を判定する。
+  if(c.name==="現金過不足") return c.change==="不足が判明" ? "left" : "right";
+  // 通常は資産・費用が増えたら左。控除項目などはカードごとの例外設定を優先。
+  const increaseLeft=(typeof c.increaseLeft==="boolean")
+    ? c.increaseLeft
+    : ["asset","expense"].includes(c.type);
+  const left=(c.change==="増えた")?increaseLeft:!increaseLeft;
+  return left?"left":"right";
+}
+function answer(side){
+  if(answered)return;
+  answered=true;
+  const right=correctSide(current);
+  const ok=side===right;
+  total++; if(ok)correct++;
+  $("total").textContent=total;
+  $("correct").textContent=correct;
+  $("rate").textContent=Math.round(correct/total*100)+"%";
+  $("progressBar").style.width=(correct/total*100)+"%";
+  document.querySelectorAll(".answer").forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.side===right)b.classList.add("correct");
+    else if(b.dataset.side===side&&!ok)b.classList.add("wrong");
+  });
+  const sideText=right==="left"?"左（借方）":"右（貸方）";
+  const f=$("feedback");
+  f.className="feedback show "+(ok?"good":"bad");
+  f.innerHTML=(ok?"正解！ 🎉":"おしい！ 正解は"+sideText+"。")+"<span class='explain'>"+current.why+"<br>"+(current.specialChanges ? current.name+"で「"+current.change+"」の場合は" : current.name+"が"+current.change+"ら、")+sideText+"に記入。</span>";
+  $("hint").textContent=ok?"いい感じ。その調子！":"ルールを確認して、次でリベンジ！";
+  $("next").disabled=false;
+}
+document.querySelectorAll(".answer").forEach(b=>b.addEventListener("click",()=>answer(b.dataset.side)));
+$("next").addEventListener("click",pickCard);
+$("skip").addEventListener("click",pickCard);
+$("mode").addEventListener("change",pickCard);
+$("weakToggle").addEventListener("click",()=>{
+  if(!current)return;
+  const key=questionKey(current);
+  if(weakQuestions.has(key)) weakQuestions.delete(key); else weakQuestions.add(key);
+  saveWeakQuestions(); updateWeakButton();
+  if($("mode").value==="weak"&&!weakQuestions.has(key)) pickCard();
+});
+$("showCategory").addEventListener("change",()=>{$("category").style.display=$("showCategory").checked?"block":"none";});
+$("reset").addEventListener("click",()=>{total=0;correct=0;$("total").textContent="0";$("correct").textContent="0";$("rate").textContent="—";$("progressBar").style.width="0";pickCard();});
+pickCard();
+</script>
+</body>
+</html>
